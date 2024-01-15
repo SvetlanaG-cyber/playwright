@@ -4,9 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npx playwright test",
+    "test": "npx playwright test --headed",
     "report": "npx playwright show-report",
-    "codegen": "npx playwright codegen demo.playwright.dev/todomvc"
+    "codegen": "npx playwright codegen demo.playwright.dev/todomvc",
+    "ui": "npx playwright test --ui",
+    "singleTest": "npx playwright test firstTest --headed --debug"
   },
   "keywords": [],
   "author": "",

@@ -20,15 +20,28 @@ module.exports = defineConfig({
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
+  //workers: 10,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
+  //reporter: [['html', { open: 'never' }]]
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     // baseURL: 'http://127.0.0.1:3000',
+    baseURL: 'https://mern-ecommerce.sdet.school/',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    // colorScheme: 'dark',
+    // geolocation: {longitude: 12, latitude: 42},
+    // locale: 'en-GB',
+    // permissions: ['geolocation'],
+    // timezoneId: 'Europe/Paris',
+    // viewport:{ width: 1280, height: 720 }
+    // screenshot: 'only-on-failure',
+    // launchOptions:{
+    //   slowMo: 1000, // 1  sec after each step to understentwhat is going on
+    // }
   },
 
   /* Configure projects for major browsers */
@@ -42,11 +55,22 @@ module.exports = defineConfig({
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
     },
-
     {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      name: 'safari',
+      use: { ...devices['Desktop Safari']},
     },
+    {
+      name: 'edge',
+      use: { ...devices['Desktop Edge'] },
+    },
+    {
+      name: 'iphone',
+      use: { ...devices['iPhone 11 Pro'] },
+    },
+    // {
+    //   name: 'webkit', // not for Mac
+    //   use: { ...devices['Desktop Safari'] },
+    // },
 
     /* Test against mobile viewports. */
     // {
