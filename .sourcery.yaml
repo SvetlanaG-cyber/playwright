@@ -1,12 +1,17 @@
+version: '1'
 rules:
-  - name: playwright-best-practices
-    enabled: true
+  - id: playwright-best-practices
+    description: Ensure best practices in Playwright tests
     language: javascript
     paths:
-      - "tests/**/*.js"
-    exclude:
-      - "node_modules/**"
-      - "dist/**"
+      include:
+        - "tests/**/*.js"
+      exclude:
+        - "node_modules/**"
+        - "dist/**"
 
 metrics:
   quality_threshold: 80
+
+analytics:
+  enabled: true
