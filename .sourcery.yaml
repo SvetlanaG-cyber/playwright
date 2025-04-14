@@ -1,0 +1,12 @@
+rules:
+  - name: playwright-best-practices
+    enabled: true
+    language: javascript
+    paths:
+      - "tests/**/*.js"
+    exclude:
+      - "node_modules/**"
+      - "dist/**"
+
+metrics:
+  quality_threshold: 80

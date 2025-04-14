@@ -8,12 +8,16 @@
     "report": "npx playwright show-report",
     "codegen": "npx playwright codegen demo.playwright.dev/todomvc",
     "ui": "npx playwright test --ui",
-    "singleTest": "npx playwright test firstTest --headed --debug"
+    "singleTest": "npx playwright test firstTest --headed --debug",
+    "sourcery": "sourcery",
+    "sourcery:check": "sourcery check",
+    "sourcery:fix": "sourcery fix"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.35.1"
+    "@playwright/test": "^1.35.1",
+    "sourcery": "^0.11.0"
   }
 }
