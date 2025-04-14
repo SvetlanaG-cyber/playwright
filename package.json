@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npx playwright test --headed",
+    "test": "playwright test",
     "report": "npx playwright show-report",
     "codegen": "npx playwright codegen demo.playwright.dev/todomvc",
     "ui": "npx playwright test --ui",
@@ -14,6 +14,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.35.1"
+    "@playwright/test": "^1.39.0"
   }
 }

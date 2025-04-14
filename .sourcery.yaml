@@ -1,0 +1,15 @@
+version: '1'
+rules:
+  - id: playwright-best-practices
+    description: Ensure best practices in Playwright tests
+    language: javascript
+    paths:
+      include:
+        - "tests/**/*.js"
+      exclude:
+        - "node_modules/**"
+        - "dist/**"
+    pattern: ".*"  # Add a valid pattern here based on your requirements
+
+metrics:
+  quality_threshold: 80

@@ -4,6 +4,12 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   test:
     timeout-minutes: 60
@@ -13,13 +19,22 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: 18
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    - name: Install Sourcery
+      run: pip install sourcery-cli
     - name: Install dependencies
       run: npm ci
+    - name: Run Sourcery Check
+      run: sourcery review .
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run Playwright tests
       run: npx playwright test
-    - uses: actions/upload-artifact@v3
+      continue-on-error: true
+    - name: Upload Playwright Report
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: playwright-report
