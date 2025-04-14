@@ -48,3 +48,12 @@ playwright/
 ├── package.json
 └── playwright.config.js
 ```
+
+## CI/CD Integration
+The project uses GitHub Actions for continuous integration. The workflow:
+- Runs on push to main/master branches
+- Runs on pull requests
+- Executes all Playwright tests
+- Uploads test reports as artifacts
+
+View test reports in the Actions tab of the repository.
