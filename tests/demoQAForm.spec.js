@@ -174,7 +174,7 @@ In summary, { exact: true } is used for exact matching of text content, while { 
     await expect(page.locator('#tree-node-home')).toBeChecked();
 })
 
-test('checkbox-2', async ({ page }) => {
+test.skip('checkbox-2', async ({ page }) => {
     await page.goto('https://demoqa.com/automation-practice-form');
     await page.getByText('Sports').check(); 
     

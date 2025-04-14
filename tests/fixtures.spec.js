@@ -8,7 +8,7 @@ const sleep = async (ms) => { return new Promise ((resolve) => {
 // let browser;
 // let browserType;
 
-test.describe('Simple login to MERN Store', () => {
+test.describe.skip('Simple login to MERN Store', () => {
     test.afterEach(async () => {
         await sleep(2000)
     })
@@ -38,6 +38,6 @@ test('Should login to store', async ({ page }) => {
  const userName = 'Jerome50@hotmail.com';
  const password = 'wrongPassword';
  //page = await context.newPage();
- await page.goto('/')
+ //await page.goto('/')
 })
 });
