@@ -9,9 +9,7 @@ rules:
       exclude:
         - "node_modules/**"
         - "dist/**"
+    pattern: ".*"  # Add a valid pattern here based on your requirements
 
 metrics:
   quality_threshold: 80
-
-analytics:
-  enabled: true
