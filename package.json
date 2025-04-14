@@ -4,20 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npx playwright test --headed",
+    "test": "playwright test",
     "report": "npx playwright show-report",
     "codegen": "npx playwright codegen demo.playwright.dev/todomvc",
     "ui": "npx playwright test --ui",
-    "singleTest": "npx playwright test firstTest --headed --debug",
-    "sourcery": "sourcery-cli",
-    "sourcery:check": "sourcery-cli check",
-    "sourcery:fix": "sourcery-cli fix"
+    "singleTest": "npx playwright test firstTest --headed --debug"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.35.1",
-    "@sourcery/cli": "^1.8.0"
+    "@playwright/test": "^1.39.0"
   }
 }

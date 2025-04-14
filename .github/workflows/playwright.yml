@@ -19,10 +19,15 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: 18
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    - name: Install Sourcery
+      run: pip install sourcery-cli
     - name: Install dependencies
       run: npm ci
     - name: Run Sourcery Check
-      run: npm run sourcery:check
+      run: sourcery review .
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run Playwright tests
