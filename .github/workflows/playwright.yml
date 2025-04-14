@@ -39,24 +39,32 @@ jobs:
         if: always()
         run: |
           echo "## Playwright Test Results" >> $GITHUB_STEP_SUMMARY
-          TOTAL=$(jq '.stats.total' test-results.json)
-          PASSED=$(jq '.stats.passed' test-results.json)
-          FAILED=$(jq '.stats.failed' test-results.json)
-          FLAKY=$(jq '.stats.flaky' test-results.json)
-          SKIPPED=$(jq '.stats.skipped' test-results.json)
-          DURATION=$(jq '.stats.duration' test-results.json)
           
-          # Convert duration to minutes and seconds
-          SECONDS=$(echo "scale=2; $DURATION/1000" | bc)
-          MINUTES=$(echo "scale=0; $SECONDS/60" | bc)
-          REMAINING_SECONDS=$(echo "scale=0; $SECONDS - ($MINUTES * 60)" | bc)
-          
+          # Extract test statistics
+          TOTAL=$(jq -r '.stats.total // 0' test-results.json)
+          PASSED=$(jq -r '.stats.passed // 0' test-results.json)
+          FAILED=$(jq -r '.stats.failed // 0' test-results.json)
+          FLAKY=$(jq -r '.stats.flaky // 0' test-results.json)
+          SKIPPED=$(jq -r '.stats.skipped // 0' test-results.json)
+          DURATION=$(jq -r '.stats.duration // 0' test-results.json)
+
+          # Safer duration calculation with error handling
+          if [ -n "$DURATION" ] && [ "$DURATION" != "null" ]; then
+            TOTAL_SECONDS=$(echo "scale=0; $DURATION / 1000" | bc || echo "0")
+            MINUTES=$(echo "$TOTAL_SECONDS / 60" | bc || echo "0")
+            REMAINING_SECONDS=$(echo "$TOTAL_SECONDS % 60" | bc || echo "0")
+            DURATION_TEXT="${MINUTES}m ${REMAINING_SECONDS}s"
+          else
+            DURATION_TEXT="unknown"
+          fi
+
+          # Output results
           echo "### Summary" >> $GITHUB_STEP_SUMMARY
           echo "✅ passed: $PASSED" >> $GITHUB_STEP_SUMMARY
           echo "❌ failed: $FAILED" >> $GITHUB_STEP_SUMMARY
           echo "🔄 flaky: $FLAKY" >> $GITHUB_STEP_SUMMARY
           echo "⏭️ skipped: $SKIPPED" >> $GITHUB_STEP_SUMMARY
-          echo "⏱️ duration: ${MINUTES}m ${REMAINING_SECONDS}s" >> $GITHUB_STEP_SUMMARY
+          echo "⏱️ duration: $DURATION_TEXT" >> $GITHUB_STEP_SUMMARY
           
           echo "### Details" >> $GITHUB_STEP_SUMMARY
           echo "Total suites: $(jq '.suites | length' test-results.json)" >> $GITHUB_STEP_SUMMARY
