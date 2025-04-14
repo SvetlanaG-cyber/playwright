@@ -1,4 +1,6 @@
-# playwright
+# Playwright Test Automation Project
+
+![Playwright Tests](https://github.com/[your-username]/playwright_mcp/actions/workflows/playwright.yml/badge.svg)
 
 <!-- tutorials:
 https://testengineer.ru/playwright-tutorial/#architecture

@@ -1,9 +1,9 @@
 name: Playwright Tests
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 permissions:
   contents: read
@@ -15,28 +15,34 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 18
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
-    - name: Install Sourcery
-      run: pip install sourcery-cli
-    - name: Install dependencies
-      run: npm ci
-    - name: Run Sourcery Check
-      run: sourcery review .
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: npx playwright test
-      continue-on-error: true
-    - name: Upload Playwright Report
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install Sourcery
+        run: pip install sourcery-cli
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Sourcery Check
+        run: sourcery review .
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: npx playwright test
+        continue-on-error: true
+      - name: Generate Test Report
+        if: always()
+        run: |
+          npx playwright show-report
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "$(cat playwright-report/results.json | jq -r '.stats | "✅ Passed: \(.passed)\n❌ Failed: \(.failed)\n⏭️ Skipped: \(.skipped)"')" >> $GITHUB_STEP_SUMMARY
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
