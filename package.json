@@ -9,15 +9,15 @@
     "codegen": "npx playwright codegen demo.playwright.dev/todomvc",
     "ui": "npx playwright test --ui",
     "singleTest": "npx playwright test firstTest --headed --debug",
-    "sourcery": "sourcery",
-    "sourcery:check": "sourcery check",
-    "sourcery:fix": "sourcery fix"
+    "sourcery": "sourcery-cli",
+    "sourcery:check": "sourcery-cli check",
+    "sourcery:fix": "sourcery-cli fix"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.35.1",
-    "sourcery": "^0.11.0"
+    "@sourcery/cli": "^1.8.0"
   }
 }
