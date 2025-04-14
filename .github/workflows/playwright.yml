@@ -37,6 +37,7 @@ jobs:
         continue-on-error: true
       - name: Process Test Results
         if: always()
+        shell: bash
         run: |
           if [ ! -f "test-results.json" ]; then
             echo "::warning::test-results.json not found"
@@ -44,43 +45,43 @@ jobs:
           fi
 
           echo "## Playwright Test Results" >> $GITHUB_STEP_SUMMARY
-          
-          # Function to safely extract json values with fallback
+
+          # Function to safely extract JSON values with fallback
           get_stat() {
             jq -r --arg key "$1" '.stats[$key] // 0' test-results.json 2>/dev/null || echo "0"
           }
-          
-          # Safely extract statistics
-          TOTAL=$(get_stat "total")
-          PASSED=$(get_stat "passed")
-          FAILED=$(get_stat "failed")
-          FLAKY=$(get_stat "flaky")
-          SKIPPED=$(get_stat "skipped")
-          DURATION=$(get_stat "duration")
 
-          # Calculate duration with fallback
-          calculate_duration() {
-            local duration=$1
-            if [ "$duration" -eq "$duration" ] 2>/dev/null && [ "$duration" -gt 0 ]; then
-              local total_seconds=$((duration / 1000))
-              local minutes=$((total_seconds / 60))
-              local seconds=$((total_seconds % 60))
-              echo "${minutes}m ${seconds}s"
-            else
-              echo "0m 0s"
-            fi
+          # Safely extract statistics with error handling
+          {
+            TOTAL=$(get_stat "total")
+            PASSED=$(get_stat "passed")
+            FAILED=$(get_stat "failed")
+            FLAKY=$(get_stat "flaky")
+            SKIPPED=$(get_stat "skipped")
+            DURATION=$(get_stat "duration")
+          } 2>/dev/null || {
+            echo "::error::Failed to extract test statistics"
+            exit 1
           }
 
-          DURATION_TEXT=$(calculate_duration "$DURATION")
+          # Calculate duration with safe arithmetic
+          DURATION_TEXT="0m 0s"
+          if [ "$DURATION" -gt 0 ] 2>/dev/null; then
+            TOTAL_SECONDS=$((DURATION / 1000))
+            MINUTES=$((TOTAL_SECONDS / 60))
+            SECONDS=$((TOTAL_SECONDS % 60))
+            DURATION_TEXT="${MINUTES}m ${SECONDS}s"
+          fi
 
-          # Output results
+          # Output results in a single block
           {
             echo "### Summary"
-            echo "✅ passed: $PASSED"
-            echo "❌ failed: $FAILED"
-            echo "🔄 flaky: $FLAKY"
-            echo "⏭️ skipped: $SKIPPED"
-            echo "⏱️ duration: $DURATION_TEXT"
+            echo "✅ Passed: $PASSED"
+            echo "❌ Failed: $FAILED"
+            echo "🔄 Flaky: $FLAKY"
+            echo "⏭️ Skipped: $SKIPPED"
+            echo "⏱️ Duration: $DURATION_TEXT"
+            echo
             echo "### Details"
             echo "Total suites: $(jq '.suites | length // 0' test-results.json)"
           } >> $GITHUB_STEP_SUMMARY
