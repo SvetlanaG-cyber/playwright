@@ -31,13 +31,16 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests
-        run: npx playwright test --reporter=html,list,json
+        env:
+          CI: true
+        run: npx playwright test
         continue-on-error: true
       - name: Verify Report Generation
         if: always()
         run: |
           ls -la playwright-report || echo "Report directory not found"
           echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "See detailed results in the GitHub Actions tab" >> $GITHUB_STEP_SUMMARY
           if [ -f "playwright-report/test-results.json" ]; then
             cat playwright-report/test-results.json | jq -r '.stats | "✅ Passed: \(.passed)\n❌ Failed: \(.failed)\n⏭️ Skipped: \(.skipped)"' >> $GITHUB_STEP_SUMMARY
           fi
