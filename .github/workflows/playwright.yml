@@ -46,12 +46,17 @@ jobs:
           SKIPPED=$(jq '.stats.skipped' test-results.json)
           DURATION=$(jq '.stats.duration' test-results.json)
           
+          # Convert duration to minutes and seconds
+          SECONDS=$(echo "scale=2; $DURATION/1000" | bc)
+          MINUTES=$(echo "scale=0; $SECONDS/60" | bc)
+          REMAINING_SECONDS=$(echo "scale=0; $SECONDS - ($MINUTES * 60)" | bc)
+          
           echo "### Summary" >> $GITHUB_STEP_SUMMARY
           echo "✅ passed: $PASSED" >> $GITHUB_STEP_SUMMARY
           echo "❌ failed: $FAILED" >> $GITHUB_STEP_SUMMARY
           echo "🔄 flaky: $FLAKY" >> $GITHUB_STEP_SUMMARY
           echo "⏭️ skipped: $SKIPPED" >> $GITHUB_STEP_SUMMARY
-          echo "⏱️ duration: $(($DURATION/1000)) seconds" >> $GITHUB_STEP_SUMMARY
+          echo "⏱️ duration: ${MINUTES}m ${REMAINING_SECONDS}s" >> $GITHUB_STEP_SUMMARY
           
           echo "### Details" >> $GITHUB_STEP_SUMMARY
           echo "Total suites: $(jq '.suites | length' test-results.json)" >> $GITHUB_STEP_SUMMARY
