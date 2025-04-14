@@ -35,15 +35,32 @@ jobs:
           CI: true
         run: npx playwright test
         continue-on-error: true
+      - name: Process Test Results
+        if: always()
+        run: |
+          echo "## Playwright Test Results" >> $GITHUB_STEP_SUMMARY
+          TOTAL=$(jq '.stats.total' test-results.json)
+          PASSED=$(jq '.stats.passed' test-results.json)
+          FAILED=$(jq '.stats.failed' test-results.json)
+          FLAKY=$(jq '.stats.flaky' test-results.json)
+          SKIPPED=$(jq '.stats.skipped' test-results.json)
+          DURATION=$(jq '.stats.duration' test-results.json)
+          
+          echo "### Summary" >> $GITHUB_STEP_SUMMARY
+          echo "✅ passed: $PASSED" >> $GITHUB_STEP_SUMMARY
+          echo "❌ failed: $FAILED" >> $GITHUB_STEP_SUMMARY
+          echo "🔄 flaky: $FLAKY" >> $GITHUB_STEP_SUMMARY
+          echo "⏭️ skipped: $SKIPPED" >> $GITHUB_STEP_SUMMARY
+          echo "⏱️ duration: $(($DURATION/1000)) seconds" >> $GITHUB_STEP_SUMMARY
+          
+          echo "### Details" >> $GITHUB_STEP_SUMMARY
+          echo "Total suites: $(jq '.suites | length' test-results.json)" >> $GITHUB_STEP_SUMMARY
       - name: Verify Report Generation
         if: always()
         run: |
-          ls -la playwright-report || echo "Report directory not found"
           echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
-          echo "See detailed results in the GitHub Actions tab" >> $GITHUB_STEP_SUMMARY
-          if [ -f "playwright-report/test-results.json" ]; then
-            cat playwright-report/test-results.json | jq -r '.stats | "✅ Passed: \(.passed)\n❌ Failed: \(.failed)\n⏭️ Skipped: \(.skipped)"' >> $GITHUB_STEP_SUMMARY
-          fi
+          if [ -f "test-results.json" ]; then
+            jq -r '.suites[] | select(.suites != null) | .suites[] | "### " + .title + "\n✅ Passed: " + (.specs | map(select(.ok)) | length | tostring) + "\n❌ Failed: " + (.specs | map(select(.ok | not)) | length | tostring)' test-results.json >> $GITHUB_STEP_SUMMARY
       - name: Upload Playwright Report
         if: always()
         uses: actions/upload-artifact@v4
