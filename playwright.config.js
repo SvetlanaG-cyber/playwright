@@ -12,6 +12,7 @@ const { defineConfig, devices } = require('@playwright/test');
  */
 module.exports = defineConfig({
   testDir: './tests',
+  timeout: 30000,
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -22,8 +23,11 @@ module.exports = defineConfig({
   workers: process.env.CI ? 1 : undefined,
   //workers: 10,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  //reporter: [['html', { open: 'never' }]]
+  reporter: [
+    ['json', { outputFile: 'test-results/test-results.json' }],
+    ['html', { outputDir: 'playwright-report' }],
+    ['list']
+  ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -32,17 +36,18 @@ module.exports = defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
     // colorScheme: 'dark',
     // geolocation: {longitude: 12, latitude: 42},
     // locale: 'en-GB',
     // permissions: ['geolocation'],
     // timezoneId: 'Europe/Paris',
     // viewport:{ width: 1280, height: 720 }
-    // screenshot: 'only-on-failure',
     // launchOptions:{
     //   slowMo: 1000, // 1  sec after each step to understentwhat is going on
     // }
   },
+  outputDir: 'test-results/',
 
   /* Configure projects for major browsers */
   projects: [

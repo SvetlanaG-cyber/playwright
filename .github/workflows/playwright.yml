@@ -1,9 +1,9 @@
 name: Playwright Tests
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 permissions:
   contents: read
@@ -15,28 +15,100 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 18
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
-    - name: Install Sourcery
-      run: pip install sourcery-cli
-    - name: Install dependencies
-      run: npm ci
-    - name: Run Sourcery Check
-      run: sourcery review .
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: npx playwright test
-      continue-on-error: true
-    - name: Upload Playwright Report
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install Sourcery
+        run: pip install sourcery-cli
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Sourcery Check
+        run: sourcery review .
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        env:
+          CI: true
+        run: |
+          mkdir -p test-results
+          npx playwright test
+        continue-on-error: true
+      - name: Process Test Results
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f "test-results.json" ]; then
+            echo "test-results.json is missing!"
+            exit 1
+          fi
+
+          RESULTS_FILE="test-results/test-results.json"
+          if [ ! -f "$RESULTS_FILE" ]; then
+            echo "::warning::Test results file not found at $RESULTS_FILE"
+            ls -la test-results/
+            exit 0
+          fi
+
+          cp "$RESULTS_FILE" ./test-results.json
+
+          echo "## Playwright Test Results" >> $GITHUB_STEP_SUMMARY
+
+          # Function to safely extract JSON values with fallback
+          get_stat() {
+            jq -r --arg key "$1" '.stats[$key] // 0' test-results.json 2>/dev/null || echo "0"
+          }
+
+          # Safely extract statistics with error handling
+          TOTAL=$(get_stat "total")
+          PASSED=$(get_stat "passed")
+          FAILED=$(get_stat "failed")
+          FLAKY=$(get_stat "flaky")
+          SKIPPED=$(get_stat "skipped")
+          DURATION=$(get_stat "duration")
+
+          # Calculate duration with safe arithmetic
+          if [[ "$DURATION" =~ ^[0-9]+$ ]]; then
+            TOTAL_SECONDS=$((DURATION / 1000))
+            MINUTES=$((TOTAL_SECONDS / 60))
+            SECONDS=$((TOTAL_SECONDS % 60))
+            DURATION_TEXT="${MINUTES}m ${SECONDS}s"
+          else
+            DURATION_TEXT="0m 0s"
+          fi
+
+          # Output results in a single block
+          {
+            echo "### Summary"
+            echo "✅ Passed: $PASSED"
+            echo "❌ Failed: $FAILED"
+            echo "🔄 Flaky: $FLAKY"
+            echo "⏭️ Skipped: $SKIPPED"
+            echo "⏱️ Duration: $DURATION_TEXT"
+            echo
+            echo "### Details"
+            echo "Total suites: $(jq '.suites | length // 0' test-results.json)"
+          } >> $GITHUB_STEP_SUMMARY
+      - name: Verify Report Generation
+        if: always()
+        run: |
+          echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          if [ -f "test-results.json" ]; then
+            jq -r '.suites[] | select(.suites != null) | .suites[] | "### " + .title + "\n✅ Passed: " + (.specs | map(select(.ok)) | length | tostring) + "\n❌ Failed: " + (.specs | map(select(.ok | not)) | length | tostring)' test-results.json >> $GITHUB_STEP_SUMMARY || echo "::warning::Failed to process test results"
+          else
+            echo "No test results available" >> $GITHUB_STEP_SUMMARY
+          fi
+      - name: Upload Playwright Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
