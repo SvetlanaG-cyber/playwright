@@ -15,7 +15,11 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-node@v3
         with:
           node-version: 18
@@ -41,6 +45,11 @@ jobs:
         if: always()
         shell: bash
         run: |
+          if [ ! -f "test-results.json" ]; then
+            echo "test-results.json is missing!"
+            exit 1
+          fi
+
           RESULTS_FILE="test-results/test-results.json"
           if [ ! -f "$RESULTS_FILE" ]; then
             echo "::warning::Test results file not found at $RESULTS_FILE"
