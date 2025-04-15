@@ -35,15 +35,16 @@ jobs:
           CI: true
         run: |
           mkdir -p test-results
-          npx playwright test --reporter=list,json --output test-results/
+          npx playwright test
         continue-on-error: true
       - name: Process Test Results
         if: always()
         shell: bash
         run: |
-          RESULTS_FILE="test-results/report.json"
+          RESULTS_FILE="test-results/test-results.json"
           if [ ! -f "$RESULTS_FILE" ]; then
             echo "::warning::Test results file not found at $RESULTS_FILE"
+            ls -la test-results/
             exit 0
           fi
 
