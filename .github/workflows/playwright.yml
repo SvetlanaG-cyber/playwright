@@ -48,6 +48,44 @@ jobs:
           fi
 
           cp "$RESULTS_FILE" ./test-results.json
+
+          echo "## Playwright Test Results" >> $GITHUB_STEP_SUMMARY
+
+          # Function to safely extract JSON values with fallback
+          get_stat() {
+            jq -r --arg key "$1" '.stats[$key] // 0' test-results.json 2>/dev/null || echo "0"
+          }
+
+          # Safely extract statistics with error handling
+          TOTAL=$(get_stat "total")
+          PASSED=$(get_stat "passed")
+          FAILED=$(get_stat "failed")
+          FLAKY=$(get_stat "flaky")
+          SKIPPED=$(get_stat "skipped")
+          DURATION=$(get_stat "duration")
+
+          # Calculate duration with safe arithmetic
+          if [[ "$DURATION" =~ ^[0-9]+$ ]]; then
+            TOTAL_SECONDS=$((DURATION / 1000))
+            MINUTES=$((TOTAL_SECONDS / 60))
+            SECONDS=$((TOTAL_SECONDS % 60))
+            DURATION_TEXT="${MINUTES}m ${SECONDS}s"
+          else
+            DURATION_TEXT="0m 0s"
+          fi
+
+          # Output results in a single block
+          {
+            echo "### Summary"
+            echo "✅ Passed: $PASSED"
+            echo "❌ Failed: $FAILED"
+            echo "🔄 Flaky: $FLAKY"
+            echo "⏭️ Skipped: $SKIPPED"
+            echo "⏱️ Duration: $DURATION_TEXT"
+            echo
+            echo "### Details"
+            echo "Total suites: $(jq '.suites | length // 0' test-results.json)"
+          } >> $GITHUB_STEP_SUMMARY
       - name: Verify Report Generation
         if: always()
         run: |
